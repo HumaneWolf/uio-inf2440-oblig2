@@ -33,6 +33,7 @@ public class MatrixMulti {
      */
     public MatrixMulti(int run) {
         this.run = run;
+        long startTime;
 
         // Generate the matrix
         Random rng = new Random();
@@ -50,6 +51,23 @@ public class MatrixMulti {
         }
 
         // Do tests
+        double[][] aSeq = a.clone();
+        double[][] bSeq = b.clone();
+        System.out.println("Starting sequential");
+        startTime = System.nanoTime();
+        double[][] cSeq = seq(a,b);
+        seqTiming[run] = (System.nanoTime() - startTime) / 1000000.0;
+        System.out.println("Sequential time: " + seqTiming[run] + "ms.");
+
+        double[][] aPar = a.clone();
+        double[][] bPar = b.clone();
+        System.out.println("Starting Parallel");
+        startTime = System.nanoTime();
+        double[][] cPar = seq(a,b);
+        parTiming[run] = (System.nanoTime() - startTime) / 1000000.0;
+        System.out.println("Parallel time: " + parTiming[run] + "ms.");
+
+        //TODO: Add checking if cpar is correct.
     }
 
     /**
@@ -69,6 +87,7 @@ public class MatrixMulti {
      * @return The resulting matrix.
      */
     private double[][] par(double[][] a, double[][] b) {
+        int cores = Runtime.getRuntime().availableProcessors();
         return null;
     }
 
@@ -81,6 +100,14 @@ public class MatrixMulti {
      * @param row The row for the square we should work on.
      */
     private void calculate(double[][] a, double bTrans[][], double[][] c, int col, int row) {
+        //
+    }
+
+    /**
+     * Transpose the matrix b.
+     * @param b The matrix to transpose.
+     */
+    private void transpose(double[][] b) {
         //
     }
 }
