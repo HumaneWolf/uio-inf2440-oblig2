@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public class MatrixMulti {
@@ -12,7 +13,7 @@ public class MatrixMulti {
 
     /**
      * Main.
-     * @param args Program arguements. index 0 = width end height of matrix, int.
+     * @param args Program arguments. index 0 = width end height of matrix, int.
      */
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -25,6 +26,16 @@ public class MatrixMulti {
         for (int i = 0; i < runs; i++) {
             new MatrixMulti(i);
         }
+
+        Arrays.sort(seqTiming);
+        Arrays.sort(parTiming);
+
+        System.out.printf("Sequential median  : %.3f\n", seqTiming[medianIndex]);
+        System.out.printf(
+                "Parallel median    : %.3f    Speedup from sequential: %.3f\n",
+                parTiming[medianIndex], (seqTiming[medianIndex] / parTiming[medianIndex])
+        );
+        System.out.println("\nn = " + n);
     }
 
     /**
@@ -67,7 +78,14 @@ public class MatrixMulti {
         parTiming[run] = (System.nanoTime() - startTime) / 1000000.0;
         System.out.println("Parallel time: " + parTiming[run] + "ms.");
 
-        //TODO: Add checking if cpar is correct.
+        // Check if it is correct.
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (cSeq[i][j] != cPar[i][j]) {
+                    System.out.println("MISMATCH: [" + i + "][" + j + "] is " + cSeq[i][j] + " and " + cPar[i][j]);
+                }
+            }
+        }
     }
 
     /**
