@@ -27,26 +27,60 @@ public class MatrixMulti {
         }
     }
 
+    /**
+     * The constructor, which initiates the array, and then does the tests.
+     * @param run The run count, dictating where to store the runtimes.
+     */
     public MatrixMulti(int run) {
         this.run = run;
 
         // Generate the matrix
-        double nums[][] = new double[n][n];
         Random rng = new Random();
+        double a[][] = new double[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                nums[i][j] = rng.nextDouble();
+                a[i][j] = rng.nextDouble();
+            }
+        }
+        double b[][] = new double[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                b[i][j] = rng.nextDouble();
             }
         }
 
         // Do tests
     }
 
-    private void seq(double[][] mat) {
-        //
+    /**
+     * Do the work sequentially.
+     * @param a Matrix A.
+     * @param b Matrix B.
+     * @return The resulting matrix.
+     */
+    private double[][] seq(double[][] a, double[][] b) {
+        return null;
     }
 
-    private void par(double[][] mat) {
+    /**
+     * Do the work in parallel.
+     * @param a Matrix A.
+     * @param b Matrix B.
+     * @return The resulting matrix.
+     */
+    private double[][] par(double[][] a, double[][] b) {
+        return null;
+    }
+
+    /**
+     * Calculate the correct value for a single square in the matrix.
+     * @param a Input matrix A.
+     * @param bTrans Input matrix B, already transposed.
+     * @param c Output matrix C, the answer.
+     * @param col The column for the square we should work on.
+     * @param row The row for the square we should work on.
+     */
+    private void calculate(double[][] a, double bTrans[][], double[][] c, int col, int row) {
         //
     }
 }
