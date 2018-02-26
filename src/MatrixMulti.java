@@ -48,33 +48,36 @@ public class MatrixMulti {
 
         // Generate the matrix
         Random rng = new Random();
-        double a[][] = new double[n][n];
+        double aSeq[][] = new double[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                a[i][j] = rng.nextDouble();
+                aSeq[i][j] = rng.nextDouble();
             }
         }
-        double b[][] = new double[n][n];
+        double bSeq[][] = new double[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                b[i][j] = rng.nextDouble();
+                bSeq[i][j] = rng.nextDouble();
             }
         }
 
-        // Do tests
-        double[][] aSeq = a.clone();
-        double[][] bSeq = b.clone();
+        // Clone matrix.
+        double[][] aPar = aSeq.clone();
+        double[][] bPar = bSeq.clone();
+
+        // Do sequential tests
         System.out.println("Starting sequential");
         startTime = System.nanoTime();
-        double[][] cSeq = seq(a,b);
+        double[][] cSeq = new double[n][n];
+        seq(aSeq, bSeq, cSeq);
         seqTiming[run] = (System.nanoTime() - startTime) / 1000000.0;
         System.out.println("Sequential time: " + seqTiming[run] + "ms.");
 
-        double[][] aPar = a.clone();
-        double[][] bPar = b.clone();
+        // Do parallel tests
         System.out.println("Starting Parallel");
         startTime = System.nanoTime();
-        double[][] cPar = seq(a,b);
+        double[][] cPar = new double[n][n];
+        par(aPar, bPar, cPar);
         parTiming[run] = (System.nanoTime() - startTime) / 1000000.0;
         System.out.println("Parallel time: " + parTiming[run] + "ms.");
 
@@ -82,7 +85,7 @@ public class MatrixMulti {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (cSeq[i][j] != cPar[i][j]) {
-                    System.out.println("MISMATCH: [" + i + "][" + j + "] is " + cSeq[i][j] + " and " + cPar[i][j]);
+                    //System.out.println("MISMATCH: [" + i + "][" + j + "] is " + cSeq[i][j] + " and " + cPar[i][j]);
                 }
             }
         }
@@ -92,21 +95,26 @@ public class MatrixMulti {
      * Do the work sequentially.
      * @param a Matrix A.
      * @param b Matrix B.
-     * @return The resulting matrix.
+     * @param c The matrix to store the result in.
      */
-    private double[][] seq(double[][] a, double[][] b) {
-        return null;
+    private void seq(double[][] a, double[][] b, double[][] c) {
+        transpose(b); // Transpose B.
+
+        for (int row = 0; row < a.length; row++) {
+            for (int col = 0; col < a[row].length; col++) {
+                calculate(a, b, c, col, row);
+            }
+        }
     }
 
     /**
      * Do the work in parallel.
      * @param a Matrix A.
      * @param b Matrix B.
-     * @return The resulting matrix.
+     * @param c The matrix to store the result in.
      */
-    private double[][] par(double[][] a, double[][] b) {
+    private void par(double[][] a, double[][] b, double[][] c) {
         int cores = Runtime.getRuntime().availableProcessors();
-        return null;
     }
 
     /**
@@ -118,14 +126,28 @@ public class MatrixMulti {
      * @param row The row for the square we should work on.
      */
     private void calculate(double[][] a, double bTrans[][], double[][] c, int col, int row) {
-        //
+        double result = 0;
+        for (int k = 0; k < a.length; k++) {
+            result += a[row][k] * bTrans[col][k];
+        }
+        c[row][col] = result;
     }
 
     /**
      * Transpose the matrix b.
      * @param b The matrix to transpose.
      */
-    private void transpose(double[][] b) {
-        //
+    public static void transpose(double[][] b) { // Version from the lecture.
+        double temp;
+        int aRows = b.length;
+        int aColumns = b[0].length;
+
+        for (int i = 0; i < aRows; i++) {
+            for (int j = i+1; j < aColumns; j++) {
+                temp = b[i][j];
+                b[i][j] = b[j][i];
+                b[j][i] = temp;
+            }
+        }
     }
 }
