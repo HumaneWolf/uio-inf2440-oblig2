@@ -1,5 +1,8 @@
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MatrixMulti {
     private static int n;
@@ -8,8 +11,6 @@ public class MatrixMulti {
     private static final int medianIndex = 4;
     private static double[] seqTiming = new double[runs];
     private static double[] parTiming = new double[runs];
-
-    private int run;
 
     /**
      * Main.
@@ -42,8 +43,7 @@ public class MatrixMulti {
      * The constructor, which initiates the array, and then does the tests.
      * @param run The run count, dictating where to store the runtimes.
      */
-    public MatrixMulti(int run) {
-        this.run = run;
+    private MatrixMulti(int run) {
         long startTime;
 
         // Generate the matrix
@@ -62,8 +62,12 @@ public class MatrixMulti {
         }
 
         // Clone matrix.
-        double[][] aPar = aSeq.clone();
-        double[][] bPar = bSeq.clone();
+        double[][] aPar = new double[n][n];
+        double[][] bPar = new double[n][n];
+        for (int i = 0; i < n; i++) {
+            aPar[i] = aSeq[i].clone();
+            bPar[i] = bSeq[i].clone();
+        }
 
         // Do sequential tests
         System.out.println("Starting sequential");
@@ -85,7 +89,7 @@ public class MatrixMulti {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (cSeq[i][j] != cPar[i][j]) {
-                    //System.out.println("MISMATCH: [" + i + "][" + j + "] is " + cSeq[i][j] + " and " + cPar[i][j]);
+                    System.out.println("MISMATCH: [" + i + "][" + j + "] is " + cSeq[i][j] + " and " + cPar[i][j]);
                 }
             }
         }
@@ -115,6 +119,25 @@ public class MatrixMulti {
      */
     private void par(double[][] a, double[][] b, double[][] c) {
         int cores = Runtime.getRuntime().availableProcessors();
+
+        transpose(b);
+
+        // Start threadpool:
+        ExecutorService tp = Executors.newFixedThreadPool(cores);
+
+        for (int row = 0; row < a.length; row++) {
+            for (int col = 0; col < a[row].length; col++) {
+                tp.execute(new WorkerTask(a, b, c, col, row));
+            }
+        }
+
+        // Tell the threadpool to shut down after it's done.
+        tp.shutdown();
+        try {
+            tp.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -137,7 +160,7 @@ public class MatrixMulti {
      * Transpose the matrix b.
      * @param b The matrix to transpose.
      */
-    public static void transpose(double[][] b) { // Version from the lecture.
+    private static void transpose(double[][] b) { // Version from the lecture.
         double temp;
         int aRows = b.length;
         int aColumns = b[0].length;
@@ -148,6 +171,28 @@ public class MatrixMulti {
                 b[i][j] = b[j][i];
                 b[j][i] = temp;
             }
+        }
+    }
+
+    public class WorkerTask implements Runnable {
+        double[][] a;
+        double[][] b;
+        double[][] c;
+
+        int col, row;
+
+        WorkerTask(double[][] a, double[][] bTrans, double[][] c, int col, int row) {
+            this.a = a;
+            b = bTrans;
+            this.c = c;
+
+            this.col = col;
+            this.row = row;
+        }
+
+        @Override
+        public void run() {
+            calculate(a, b, c, col, row);
         }
     }
 }
